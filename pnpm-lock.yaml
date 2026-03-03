@@ -97,6 +97,9 @@ importers:
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       jsonwebtoken:
         specifier: ^9.0.3
         version: 9.0.3
@@ -142,9 +145,6 @@ importers:
       '@prisma/client':
         specifier: ^7.3.0
         version: 7.3.0(prisma@7.3.0(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.2))(typescript@5.9.2)
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3

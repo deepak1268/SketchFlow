@@ -1,28 +1,29 @@
-// import "dotenv/config"
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({
+  path: path.join(process.cwd(), "../../.env"),
+});
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {
-  createRoomSchema,
-  createUserSchema,
-  signinSchema,
-} from "@repo/common/schema";
-import { prismaClient, Prisma } from "@repo/db/client";
+import { createRoomSchema,createUserSchema,signinSchema } from "@repo/common/schema";
+import { Prisma,prismaClient } from "@repo/db/client";
 import { JWT_SECRET } from "@repo/backend-common/config";
+import { authMiddleware } from "./middleware/auth";
 
 const app = express();
 app.use(express.json())
 
 app.post("/signup", async (req, res) => {
-  const data = createUserSchema.safeParse(req.body);
-  if (!data.success) {
-    console.log(data.error);
-    return res.status(400).send(data.error);
+  const parsedData = createUserSchema.safeParse(req.body);
+  if (!parsedData.success) {
+    console.log(parsedData.error);
+    return res.status(400).send(parsedData.error);
   }
-  const { email, password, username } = data.data;
+  const { email, password, username } = parsedData.data;
   try {
     const hashedPass = await bcrypt.hash(password, 8);
-    const user = await prismaClient.user.create({
+    await prismaClient.user.create({
       data: {
         email,
         password: hashedPass,
@@ -61,12 +62,12 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/signin", async (req, res) => {
-  const data = signinSchema.safeParse(req.body);
-  if (!data.success) {
-    console.log(data.error);
-    return res.status(400).send(data.error);
+  const parsedData = signinSchema.safeParse(req.body);
+  if (!parsedData.success) {
+    console.log(parsedData.error);
+    return res.status(400).send(parsedData.error);
   }
-  const { username, email, password } = data.data;
+  const { username, email, password } = parsedData.data;
   try {
     const user = username
       ? await prismaClient.user.findUnique({
@@ -113,18 +114,17 @@ app.post("/signin", async (req, res) => {
   }
 });
 
-app.post("/create-room", async (req, res) => {
-  const data = createRoomSchema.safeParse(req.body);
-  if (!data.success) {
-    console.log(data.error);
-    return res.status(400).send(data.error);
+app.post("/create-room",authMiddleware ,async (req, res) => {
+  const parsedData = createRoomSchema.safeParse(req.body);
+  if (!parsedData.success) {
+    console.log(parsedData.error);
+    return res.status(400).send(parsedData.error);
   }
-  const {name} = data.data;
+  const {name} = parsedData.data;
   try {
     const room = await prismaClient.room.create({
       data: {
         slug: name,
-        // @ts-ignore
         adminId: req.userId,
       },
     });

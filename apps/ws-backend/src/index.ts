@@ -1,3 +1,8 @@
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({
+  path: path.join(process.cwd(), "../../.env"),
+});
 import { WebSocketServer } from "ws";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config"

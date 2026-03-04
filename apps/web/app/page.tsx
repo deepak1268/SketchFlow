@@ -1,14 +1,15 @@
-
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import FeatureSection from "@/components/FeatureSection";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex justify-center items-center flex-col bg-black text-white">
-      <div className="font-bold text-6xl mb-6">
-        Landing Page
-      </div>
-      <div className="text-neutral-100 font-semibold text-xl">
-        To be Updated
-      </div>
+    <div className="min-h-screen w-screen flex flex-col bg-[#111217]">
+      <Navbar />
+      <HeroSection />
+      <FeatureSection />
+      <Footer />
     </div>
   );
 }

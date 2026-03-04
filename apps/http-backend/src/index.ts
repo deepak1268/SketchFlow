@@ -6,6 +6,7 @@ dotenv.config({
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import cors from "cors";
 import { createRoomSchema,createUserSchema,signinSchema } from "@repo/common/schema";
 import { Prisma,prismaClient } from "@repo/db/client";
 import { JWT_SECRET } from "@repo/backend-common/config";
@@ -13,6 +14,11 @@ import { authMiddleware } from "./middleware/auth";
 
 const app = express();
 app.use(express.json())
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+  })
+);
 
 app.post("/signup", async (req, res) => {
   const parsedData = createUserSchema.safeParse(req.body);

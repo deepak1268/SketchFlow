@@ -153,7 +153,7 @@ app.post("/create-room",authMiddleware ,async (req, res) => {
   }
 });
 
-app.post("/chats/:roomId", async (req,res) => {
+app.get("/chats/:roomId", async (req,res) => {
   const roomId : number = Number(req.params.roomId);
   try{
     const messages = await prismaClient.chat.findMany({
@@ -174,7 +174,7 @@ app.post("/chats/:roomId", async (req,res) => {
   }
 })
 
-app.post("/room/:slug", async (req,res) => {
+app.get("/room/:slug", async (req,res) => {
   const slug = req.params.slug;
   try{
     const room = await prismaClient.room.findFirst({

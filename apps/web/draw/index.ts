@@ -1,5 +1,6 @@
 import { BACKEND_URL } from "@/config";
 import axios from "axios";
+import { Tool } from "@/components/Canvas";
 
 type Shape = {
   type: "rect";
@@ -7,7 +8,31 @@ type Shape = {
   y: number;
   height: number;
   width: number;
-};
+} | {
+  type : "circle",
+  centerX : number,
+  centerY : number,
+  radiusX : number,
+  radiusY : number, 
+} | {
+  type : "diamond",
+  centerX : number,
+  centerY : number,
+  height : number,
+  width : number,
+} | {
+  type : "line",
+  startX : number,
+  startY : number,
+  endX : number,
+  endY : number 
+} | {
+  type : "arrow",
+  startX : number,
+  startY : number,
+  endX : number,
+  endY : number
+} | null;
 
 export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket : WebSocket) {
   const ctx = canvas.getContext("2d");
@@ -29,6 +54,9 @@ export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket 
   let startX = 0;
   let startY = 0;
 
+  // @ts-ignore
+  const selectedTool = window.selectedTool;
+
   canvas.addEventListener("mousedown", (e) => {
     clicked = true;
     startX = e.clientX;
@@ -37,25 +65,108 @@ export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket 
 
   canvas.addEventListener("mousemove", (e) => {
     if (clicked) {
+      const centerX = (startX + e.clientX) / 2;
+      const centerY = (startY + e.clientY) / 2;
       const width = e.clientX - startX;
       const height = e.clientY - startY;
       clearCanvas(canvas, ctx,existingShapes);
       ctx.strokeStyle = "rgba(255,255,255)";
-      ctx.strokeRect(startX, startY, width, height);
+      if(window.selectedTool === Tool.rectangle){
+        ctx.strokeRect(startX, startY, width, height);
+      }
+      else if(window.selectedTool === Tool.circle){
+        ctx.beginPath();
+        const radiusX = width / 2;
+        const radiusY = height / 2;
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      else if(window.selectedTool === Tool.diamond){
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY - height / 2); 
+        ctx.lineTo(centerX + width / 2, centerY);
+        ctx.lineTo(centerX, centerY + height / 2);
+        ctx.lineTo(centerX - width / 2, centerY);
+        ctx.closePath();
+        ctx.stroke();
+      }
+      else if(window.selectedTool === Tool.arrow){
+        const headLength = 10;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const angle = Math.atan2(dy, dx);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.lineTo(e.clientX - headLength * Math.cos(angle - Math.PI / 6),e.clientY - headLength * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(e.clientX, e.clientY);
+        ctx.lineTo(e.clientX - headLength * Math.cos(angle + Math.PI / 6),e.clientY - headLength * Math.sin(angle + Math.PI / 6));
+        ctx.stroke();
+      }
+      else if (window.selectedTool === Tool.line){
+        ctx.beginPath();
+        ctx.moveTo(startX,startY);
+        ctx.lineTo(e.clientX,e.clientY);
+        ctx.stroke();
+      }
     }
   });
 
   canvas.addEventListener("mouseup", (e) => {
     clicked = false;
+    let shape : Shape = null;
+    const centerX = (startX + e.clientX) / 2;
+    const centerY = (startY + e.clientY) / 2;
     const width = e.clientX - startX;
     const height = e.clientY - startY;
-    const shape = {
-      type: "rect" as const,
-      x: startX,
-      y: startY,
-      width,
-      height,
-    };
+    if(window.selectedTool === Tool.rectangle){
+      shape = {
+        type: "rect",
+        x: startX,
+        y: startY,
+        width,
+        height,
+      };
+    }
+    else if(window.selectedTool === Tool.circle){
+      shape = {
+        type : "circle",
+        centerX,
+        centerY,
+        radiusX : width/2,
+        radiusY : height/2
+      }
+    }
+    else if(window.selectedTool === Tool.diamond){
+      shape = {
+        type : "diamond",
+        centerX,
+        centerY,
+        height,
+        width 
+      }
+    }
+    else if(window.selectedTool === Tool.line){
+      shape = {
+        type : "line",
+        startX,
+        startY,
+        endX : e.clientX,
+        endY : e.clientY
+      }
+    }
+    else if(window.selectedTool === Tool.arrow){
+      shape = {
+        type : "arrow",
+        startX,
+        startY,
+        endX : e.clientX,
+        endY : e.clientY
+      }
+    }
+    if(shape === null) {
+      return
+    }
     existingShapes.push(shape);
     clearCanvas(canvas, ctx,existingShapes);
     socket.send(JSON.stringify({
@@ -73,9 +184,42 @@ function clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D,ex
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   existingShapes.forEach((shape) => {
+    ctx.strokeStyle = "rgba(255,255,255)";
+    if(shape === null) return;
     if (shape.type === "rect") {
-      ctx.strokeStyle = "rgba(255,255,255)";
       ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+    }
+    else if (shape.type === "circle"){
+      ctx.beginPath();
+      ctx.ellipse(shape.centerX,shape.centerY,shape.radiusX,shape.radiusY,0,0,Math.PI * 2);
+      ctx.stroke();
+    }
+    else if (shape.type === "diamond"){
+      ctx.beginPath();
+      ctx.moveTo(shape.centerX, shape.centerY - shape.height / 2); 
+      ctx.lineTo(shape.centerX + shape.width / 2, shape.centerY); 
+      ctx.lineTo(shape.centerX, shape.centerY + shape.height / 2);
+      ctx.lineTo(shape.centerX - shape.width / 2, shape.centerY);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    else if (shape.type === "line"){
+      ctx.beginPath();
+      ctx.moveTo(shape.startX,shape.startY);
+      ctx.lineTo(shape.endX,shape.endY);
+      ctx.stroke();
+    } else {
+      const headLength = 10;
+      const dx = shape.endX - shape.startX;
+      const dy = shape.endY - shape.startY;
+      const angle = Math.atan2(dy, dx);
+      ctx.beginPath();
+      ctx.moveTo(shape.startX,shape.startY);
+      ctx.lineTo(shape.endX,shape.endY);
+      ctx.lineTo(shape.endX - headLength * Math.cos(angle - Math.PI / 6),shape.endY - headLength * Math.sin(angle - Math.PI / 6));
+      ctx.moveTo(shape.endX, shape.endY);
+      ctx.lineTo(shape.endX - headLength * Math.cos(angle + Math.PI / 6),shape.endY - headLength * Math.sin(angle + Math.PI / 6));
+      ctx.stroke();
     }
   });
 }

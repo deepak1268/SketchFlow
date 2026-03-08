@@ -7,8 +7,10 @@ export default function Home() {
   return (
     <div className="min-h-screen w-screen flex flex-col bg-[#111217]">
       <Navbar />
-      <HeroSection />
-      <FeatureSection />
+      <div className="flex-1">
+        <HeroSection />
+        <FeatureSection />
+      </div>
       <Footer />
     </div>
   );

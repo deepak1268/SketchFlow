@@ -2,8 +2,12 @@
 import { MoveRightIcon } from "lucide-react";
 import Image from "next/image";
 import heroImage from "@/public/heroImage.png";
+import { useRouter } from "next/navigation";
 
 export default function HeroSection() {
+
+  const router = useRouter();
+
   return (
 
     <div className="flex flex-col justify-center items-center mt-20">
@@ -23,7 +27,7 @@ export default function HeroSection() {
       <div className="flex items-center justify-center gap-4 mb-18">
         <button
           className="text-black bg-[#4870eb] flex justify-center items-center gap-2 px-6 py-4 rounded-xl cursor-pointer hover:opacity-90"
-          onClick={() => console.log("heelo")}
+          onClick={() => router.push("/dashboard")}
         >
           <span className="text-lg font-semibold ">Open Canvas</span>
           <MoveRightIcon />

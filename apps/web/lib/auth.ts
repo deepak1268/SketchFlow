@@ -13,5 +13,7 @@ export async function Signin({email,password}:{email:string,password:string}){
     return axios.post(`${BACKEND_URL}/signin`,{
         email,
         password
+    },{
+        withCredentials : true
     })
 }

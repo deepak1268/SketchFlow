@@ -10,8 +10,7 @@ export default function RoomCanavas({roomId} : {roomId: number}){
     
     // on mount the ws connection is made
     useEffect(() => {
-        const token = localStorage.getItem("authorization");
-        const ws = new WebSocket(`${WS_URL}?token=${token}`);
+        const ws = new WebSocket(`${WS_URL}`);
 
         ws.onopen = () => {
             setSocket(ws);

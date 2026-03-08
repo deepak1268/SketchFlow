@@ -1,12 +1,12 @@
 "use client"
 import { useEffect, useState } from "react"
 import Navbar from "./Navbar"
+import Footer from "./Footer"
 import RoomSection from "./RoomSection"
 import { PlusIcon,LogInIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import axios from "axios"
 import { BACKEND_URL } from "@/config"
-import { Trash2,ArrowRight } from "lucide-react"
 import RoomCard from "./RoomCard"
 
 export interface Room {
@@ -27,12 +27,8 @@ export default function Dashboard(){
         // when the page loads we need to fetch all the existing rooms of the user
         try{
             async function getRooms(){
-                const token = localStorage.getItem("authorization");
-                console.log(`${BACKEND_URL}/userRoom`);
                 const res = await axios.get(`${BACKEND_URL}/userRoom`,{
-                    headers : {
-                        "authorization" : token
-                    }
+                    withCredentials : true
                 });
                 setMyRooms(res.data);
             }
@@ -46,15 +42,12 @@ export default function Dashboard(){
     async function createRoom(){
       try{
         setLoading(true);
-        const token = localStorage.getItem("authorization");
         const res = await axios.post(`${BACKEND_URL}/create-room`,
           {
             name : createRoomName
           },
           {
-            headers : {
-              "authorization" : token
-            }
+            withCredentials : true
           }
         )
         setMyRooms(prev => [...prev, res.data]);
@@ -70,14 +63,11 @@ export default function Dashboard(){
     
     async function handleDeleteRoom(roomName : string){
       try{
-        const token = localStorage.getItem("authorization");
         await axios.delete(`${BACKEND_URL}/deleteRoom`,{
           data:{
             roomName
           },
-          headers:{
-            "authorization" : token
-          }
+          withCredentials : true
         })
         setMyRooms(prev => prev.filter(room => room.slug !== roomName));
         alert("Room deleted");
@@ -87,11 +77,11 @@ export default function Dashboard(){
       }
     }  
 
-    return <div className="min-h-screen w-screen bg-[#111217]">
+    return <div className="min-h-screen flex flex-col w-screen bg-[#111217]">
 
         <Navbar />
         
-        <div className="flex flex-col justify-center items-center py-14">
+        <div className="flex-1 flex flex-col justify-center items-center py-14">
 
             <div>
                 <h1 className="text-3xl font-bold leading-tight tracking-tight mb-2">Dashboard</h1>
@@ -131,7 +121,7 @@ export default function Dashboard(){
 
         </div>
 
-        
+        <Footer />
         
     </div>
 }

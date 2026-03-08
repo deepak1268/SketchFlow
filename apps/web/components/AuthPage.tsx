@@ -18,7 +18,6 @@ export default function AuthPage({signin} : {signin : boolean}) {
         setLoading(true);
         try {
             const res = await Signup({username,email,password});
-            alert("Signup Success")
             router.push("/signin");
         } catch (err) {
             alert("Some error occured");
@@ -32,9 +31,7 @@ export default function AuthPage({signin} : {signin : boolean}) {
         setLoading(true);
         try {
             const res = await Signin({email, password});
-            const token = res.data.token;
-            localStorage.setItem("authorization",token);
-            alert("Signin success")
+            router.push("/dashboard")
         } catch (err) {
             alert("some error occured")
             console.error(err);

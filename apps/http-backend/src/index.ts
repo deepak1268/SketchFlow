@@ -11,12 +11,15 @@ import { createRoomSchema,createUserSchema,signinSchema } from "@repo/common/sch
 import { Prisma,prismaClient } from "@repo/db/client";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { authMiddleware } from "./middleware/auth";
+import cookieParser from "cookie-parser"
 
 const app = express();
 app.use(express.json())
+app.use(cookieParser());
 app.use(
   cors({
     origin: "http://localhost:3000",
+    credentials : true
   })
 );
 
@@ -104,9 +107,16 @@ app.post("/signin", async (req, res) => {
           userId: user.id,
         },
         JWT_SECRET,
+        {expiresIn : "7d"}
       );
-      return res.json({
-        token,
+      res.cookie("token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false, 
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+      return res.status(200).json({
+        message : "Login successful"
       });
     } else
       return res.status(404).json({
@@ -153,7 +163,7 @@ app.post("/create-room",authMiddleware ,async (req, res) => {
   }
 });
 
-app.get("/chats/:roomId", async (req,res) => {
+app.get("/chats/:roomId", authMiddleware , async (req,res) => {
   const roomId : number = Number(req.params.roomId);
   try{
     const messages = await prismaClient.chat.findMany({
@@ -224,6 +234,37 @@ app.delete("/deleteRoom",authMiddleware,async (req,res) => {
     res.status(500).json({
       message : "Internal Server Error"
     })
+  }
+})
+
+app.post("/logout", (req,res) => {
+  res.clearCookie("token");
+  res.json({
+    message : "Logout Successful"
+  })
+})
+
+app.get("/check-auth",(req,res) => {
+  const token = req.cookies.token;
+  if(!token){
+    return res.json({
+      authenticated : false
+    });
+  }
+  try{
+    const decoded = jwt.verify(token,JWT_SECRET)
+    if(typeof decoded == "string" || !decoded.userId){
+      return res.status(200).json({
+        authenticated : false
+      });
+    }
+    return res.status(200).json({
+      authenticated : true
+    })
+  } catch(err){
+    return res.status(401).json({
+      authenticated : false
+    });
   }
 })
 

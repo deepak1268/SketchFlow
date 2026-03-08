@@ -47,11 +47,11 @@ export default function AuthPage({signin} : {signin : boolean}) {
 
   return (
     <div className="min-h-screen w-screen flex justify-center items-center bg-[#111217]">
-        <div className="flex flex-col justify-center items-center rounded-xl bg-neutral-800 px-8 py-6">
+        <div className="flex flex-col justify-center items-center rounded-xl bg-[#191b24] p-10">
             <div className="font-bold text-2xl mb-10">
                 Welcome to Excalidraw
             </div>
-            <div className="flex flex-col gap-4 min-w-sm mb-8">
+            <div className="flex flex-col gap-6 min-w-sm mb-8">
                 {!signin ? <Input val={username} setVal={setUsername} label={"Username"} type={"username"} placeholder="Enter your username"></Input> : null} 
                 <Input val={email} setVal={setEmail} label={"Email"} type={"email"} placeholder="Enter your email"></Input>
                 <Input val={password} setVal={setPassword} label={"Password"} type={"password"} placeholder="Enter your password"></Input>
@@ -59,6 +59,17 @@ export default function AuthPage({signin} : {signin : boolean}) {
             <Button disabled={loading} onClick={signin ? handleSignin : handleSignup}>
                 {signin ? loading ? "Logging In" : "Login" : loading ? "Signing Up" : "Sign Up"}
             </Button>
+            {signin ? 
+                <div className="flex gap-2 mt-6">
+                    <span className="text-neutral-400">Don't have an account?</span>
+                    <span className="cursor-pointer text-[#4870eb]" onClick={() => router.push("/signup")}>Sign Up</span>
+                </div> 
+            :
+                <div className="flex gap-2 mt-6">
+                    <span className="text-neutral-400">Already have an account?</span>
+                    <span className="cursor-pointer text-[#4870eb]" onClick={() => router.push("/signup")}>Login</span>
+                </div> 
+            }
         </div>
     </div>
   )

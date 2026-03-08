@@ -76,8 +76,8 @@ export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket 
       }
       else if(window.selectedTool === Tool.circle){
         ctx.beginPath();
-        const radiusX = width / 2;
-        const radiusY = height / 2;
+        const radiusX = Math.abs(width / 2);
+        const radiusY = Math.abs(height / 2);
         ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
         ctx.stroke();
       }
@@ -133,8 +133,8 @@ export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket 
         type : "circle",
         centerX,
         centerY,
-        radiusX : width/2,
-        radiusY : height/2
+        radiusX : Math.abs(width/2),
+        radiusY : Math.abs(height/2)
       }
     }
     else if(window.selectedTool === Tool.diamond){

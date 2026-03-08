@@ -20,7 +20,7 @@ export function Input({ placeholder,label,type,val,setVal}: InputProps) {
         type={type}
         placeholder={placeholder}
         value={val}
-        className="bg-neutral-700 border-none rounded-md px-3 py-2"
+        className="bg-[#22252f] border-none rounded-md px-3 py-2"
         onChange={(e)=> setVal(e.target.value)}
       />
     </div>

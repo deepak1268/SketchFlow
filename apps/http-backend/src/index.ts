@@ -191,4 +191,40 @@ app.get("/room/:slug", async (req,res) => {
   }
 })
 
+app.get("/userRoom", authMiddleware , async (req,res) => {
+  const adminId = req.userId;
+  try{
+    const rooms = await prismaClient.room.findMany({
+      where : {
+        adminId
+      }
+    });
+    res.status(200).json(rooms);
+  } catch(err){
+    console.error(err);
+    res.status(500).json({
+      message : "Internal Server Error"
+    })
+  }
+})
+
+app.delete("/deleteRoom",authMiddleware,async (req,res) => {
+  const slug = req.body.roomName;
+  try{
+    await prismaClient.room.delete({
+      where : {
+        slug
+      }
+    })
+    res.status(200).json({
+      message: "room deleted"
+    })
+  } catch(err){
+    console.error(err);
+    res.status(500).json({
+      message : "Internal Server Error"
+    })
+  }
+})
+
 app.listen(3001);

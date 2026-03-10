@@ -8,7 +8,8 @@ export enum Tool {
     circle,
     diamond,
     arrow,
-    line
+    line,
+    pencil
 }
 
 export default function Canvas({roomId,socket} : {roomId : number , socket: WebSocket}){

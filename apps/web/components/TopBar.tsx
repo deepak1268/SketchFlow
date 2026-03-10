@@ -5,6 +5,7 @@ import {
   ArrowRightIcon,
   MinusIcon,
   DiamondIcon,
+  PencilIcon
 } from "lucide-react";
 import { ReactNode, SetStateAction, Dispatch } from "react";
 import { Tool } from "./Canvas";
@@ -54,6 +55,9 @@ export default function TopBar({
       </ToolButton>
       <ToolButton onClick={() => setSelectedTool(Tool.line)} activated={selectedTool===Tool.line}>
         <MinusIcon />
+      </ToolButton>
+      <ToolButton onClick={() => setSelectedTool(Tool.pencil)} activated={selectedTool===Tool.pencil}>
+        <PencilIcon />
       </ToolButton>
     </div>
   );

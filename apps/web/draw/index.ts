@@ -32,6 +32,9 @@ type Shape = {
   startY : number,
   endX : number,
   endY : number
+} | {
+  type : "pencil",
+  points : {x : number, y : number}[]
 } | null;
 
 export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket : WebSocket) {
@@ -54,13 +57,16 @@ export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket 
   let startX = 0;
   let startY = 0;
 
-  // @ts-ignore
-  const selectedTool = window.selectedTool;
+  let currentPencilPoints : {x:number, y:number}[] = [];
 
   canvas.addEventListener("mousedown", (e) => {
     clicked = true;
     startX = e.clientX;
     startY = e.clientY;
+
+    if(window.selectedTool === Tool.pencil){
+      currentPencilPoints = [{x:startX,y:startY}];
+    }
   });
 
   canvas.addEventListener("mousemove", (e) => {
@@ -108,6 +114,17 @@ export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket 
         ctx.moveTo(startX,startY);
         ctx.lineTo(e.clientX,e.clientY);
         ctx.stroke();
+      }
+      else if (window.selectedTool === Tool.pencil){
+        currentPencilPoints.push({x:e.clientX,y:e.clientY});
+        if(currentPencilPoints.length > 1){
+          ctx.beginPath();
+          ctx.moveTo(currentPencilPoints[0]?.x ?? 0,currentPencilPoints[0]?.y ?? 0);
+          for(let i = 1; i < currentPencilPoints.length; i++){
+            ctx.lineTo(currentPencilPoints[i]?.x ?? 0, currentPencilPoints[i]?.y ?? 0);
+          }
+          ctx.stroke();
+        }
       }
     }
   });
@@ -164,6 +181,13 @@ export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket 
         endY : e.clientY
       }
     }
+    else if(window.selectedTool === Tool.pencil){
+      shape = {
+        type : "pencil",
+        points : currentPencilPoints
+      };
+      currentPencilPoints = [];
+    }
     if(shape === null) {
       return
     }
@@ -208,7 +232,7 @@ function clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D,ex
       ctx.moveTo(shape.startX,shape.startY);
       ctx.lineTo(shape.endX,shape.endY);
       ctx.stroke();
-    } else {
+    } else if(shape.type === "arrow"){
       const headLength = 10;
       const dx = shape.endX - shape.startX;
       const dy = shape.endY - shape.startY;
@@ -219,6 +243,14 @@ function clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D,ex
       ctx.lineTo(shape.endX - headLength * Math.cos(angle - Math.PI / 6),shape.endY - headLength * Math.sin(angle - Math.PI / 6));
       ctx.moveTo(shape.endX, shape.endY);
       ctx.lineTo(shape.endX - headLength * Math.cos(angle + Math.PI / 6),shape.endY - headLength * Math.sin(angle + Math.PI / 6));
+      ctx.stroke();
+    } else{
+      if (shape.points.length < 2) return;
+      ctx.beginPath();
+      ctx.moveTo(shape.points[0]?.x ?? 0, shape.points[0]?.y ?? 0);
+      for (let i = 1; i < shape.points.length; i++) {
+        ctx.lineTo(shape.points[i]?.x ?? 0, shape.points[i]?.y ?? 0);
+      }
       ctx.stroke();
     }
   });

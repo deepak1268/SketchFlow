@@ -144,9 +144,7 @@ app.post("/create-room",authMiddleware ,async (req, res) => {
         adminId: req.userId,
       },
     });
-    return res.status(200).json({
-        message: "Room created successfully."
-    })
+    return res.status(200).json(room);
   } catch (err) {
     console.error(err);
     if (

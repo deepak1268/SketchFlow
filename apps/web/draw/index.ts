@@ -226,7 +226,9 @@ function clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D,ex
 
 async function getExistingShapes(roomId : number){
   try{
-    const res = await axios.get(`${BACKEND_URL}/chats/${roomId}`);
+    const res = await axios.get(`${BACKEND_URL}/chats/${roomId}`,{
+      withCredentials : true
+    });
     const messages =  res.data.messages;
     const shapes = messages.map((x : {message : string}) => {
     const messageData = JSON.parse(x.message);

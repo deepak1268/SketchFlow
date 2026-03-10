@@ -7,7 +7,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { prismaClient } from "@repo/db/client";
-import cookie from "cookie";
+import * as cookie from "cookie";
 
 const wss = new WebSocketServer({ port: 8080 });
 

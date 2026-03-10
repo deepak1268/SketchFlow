@@ -1,6 +1,6 @@
-import { initDraw } from "@/draw";
 import { useEffect, useRef, useState } from "react";
 import TopBar from "./TopBar";
+import Game from "@/draw/game";
 
 export enum Tool {
     pointer,
@@ -14,16 +14,30 @@ export enum Tool {
 
 export default function Canvas({roomId,socket} : {roomId : number , socket: WebSocket}){
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const gameRef = useRef<Game | null>(null);
     const [selectedTool,setSelectedTool] = useState<Tool>(Tool.pointer);
 
     useEffect(() => {
-        if(canvasRef.current) initDraw(canvasRef.current,roomId,socket);
-    },[])
+        if(!canvasRef.current) return;
+        const game = new Game(canvasRef.current,roomId,socket);
+        gameRef.current = game;
 
-    // this is the ugly way of doing it as you changing the window object => will be later replaced by the game class (better method)
+        async function intializeGame(){
+            await game.init();
+            game.initHandler();
+            game.initMouseHandlers();
+            game.setTool(selectedTool);
+        }
+        intializeGame();
+
+        return () => {
+            game.destroy();
+        }
+    },[roomId,socket])
+
     useEffect(() => {   
-        // @ts-ignore 
-        window.selectedTool = selectedTool;
+        if(!gameRef.current) return;
+        gameRef.current.setTool(selectedTool);
     },[selectedTool]);
 
     return <div>

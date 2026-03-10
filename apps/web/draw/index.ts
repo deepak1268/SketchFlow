@@ -35,6 +35,11 @@ type Shape = {
 } | {
   type : "pencil",
   points : {x : number, y : number}[]
+} | {
+  type : "text",
+  x : number,
+  y : number,
+  text : string 
 } | null;
 
 export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket : WebSocket) {
@@ -200,6 +205,93 @@ export async function initDraw(canvas: HTMLCanvasElement,roomId : number,socket 
     }));
     
   });
+
+  canvas.addEventListener("dblclick", (e) => {
+    if (window.selectedTool !== Tool.pointer) return;
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const x = e.clientX - canvasRect.left;
+    const y = e.clientY - canvasRect.top;
+
+    const textarea = document.createElement("textarea");
+
+    textarea.value = "";
+    textarea.style.position = "absolute";
+    textarea.style.left = `${canvasRect.left + x}px`;
+    textarea.style.top = `${canvasRect.top + y}px`;
+    textarea.style.background = "transparent";
+    textarea.style.color = "white";
+    textarea.style.border = "none";
+    textarea.style.outline = "none";
+    textarea.style.font = "16px Arial";
+    textarea.style.lineHeight = "20px";
+    textarea.style.padding = "0";
+    textarea.style.margin = "0";
+    textarea.style.resize = "none";
+    textarea.style.overflow = "hidden";
+    textarea.style.whiteSpace = "pre";
+    textarea.style.minWidth = "2px";
+    textarea.style.minHeight = "20px";
+    textarea.style.zIndex = "1000";
+
+    canvas.parentElement?.appendChild(textarea);
+    textarea.focus();
+
+    const adjustTextareaSize = () => {
+      textarea.style.height = "auto";
+      textarea.style.width = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+      textarea.style.width = `${Math.max(100, textarea.scrollWidth)}px`;
+    };
+
+    adjustTextareaSize();
+
+    textarea.addEventListener("input", adjustTextareaSize);
+
+    let hasFinalized = false;
+
+  const finalizeText = () => {
+    if (hasFinalized) return;
+    hasFinalized = true;
+
+    const text = textarea.value;
+
+    textarea.removeEventListener("input", adjustTextareaSize);
+    document.removeEventListener("mousedown", handleOutsideClick, true);
+    textarea.remove();
+
+    if (!text.trim()) return;
+
+    const shape: Shape = {
+      type: "text",
+      x,
+      y,
+      text,
+    };
+
+    existingShapes.push(shape);
+    clearCanvas(canvas, ctx, existingShapes);
+
+    socket.send(
+      JSON.stringify({
+        type: "chat",
+        roomId,
+        message: JSON.stringify(shape),
+      })
+    );
+  };
+
+  const handleOutsideClick = (event: MouseEvent) => {
+    const target = event.target as Node;
+    if (!textarea.contains(target)) {
+      finalizeText();
+    }
+  };
+
+  document.addEventListener("mousedown", handleOutsideClick, true);
+  });
+
+
 }
 
 function clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D,existingShapes : Shape[]) {
@@ -244,7 +336,7 @@ function clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D,ex
       ctx.moveTo(shape.endX, shape.endY);
       ctx.lineTo(shape.endX - headLength * Math.cos(angle + Math.PI / 6),shape.endY - headLength * Math.sin(angle + Math.PI / 6));
       ctx.stroke();
-    } else{
+    } else if(shape.type === "pencil"){
       if (shape.points.length < 2) return;
       ctx.beginPath();
       ctx.moveTo(shape.points[0]?.x ?? 0, shape.points[0]?.y ?? 0);
@@ -252,6 +344,14 @@ function clearCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D,ex
         ctx.lineTo(shape.points[i]?.x ?? 0, shape.points[i]?.y ?? 0);
       }
       ctx.stroke();
+    } else {
+      ctx.font = "16px Arial";
+      ctx.fillStyle = "white";
+      ctx.textBaseline = "top";
+      const lines = shape.text.split("\n");
+      lines.forEach((line, index) => {
+        ctx.fillText(line, shape.x, shape.y + index * 20);
+      });
     }
   });
 }

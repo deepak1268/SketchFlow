@@ -1,15 +1,17 @@
 import dotenv from "dotenv";
-import path from "path";
-dotenv.config({
-  path: path.join(process.cwd(), "../../.env"),
-});
+dotenv.config();
 import { WebSocketServer, WebSocket } from "ws";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { prismaClient } from "@repo/db/client";
 import * as cookie from "cookie";
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = Number(process.env.PORT) || 8080;
+const wss = new WebSocketServer({ port: PORT });
+
+wss.on("listening", () => {
+  console.log(`WebSocket server running on port ${PORT}`);
+});
 
 interface User {
   userId: number;

@@ -18,7 +18,7 @@ app.use(express.json())
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000","https://sketchflow.vercel.app"],
     credentials : true
   })
 );
@@ -111,9 +111,10 @@ app.post("/signin", async (req, res) => {
       );
       res.cookie("token", token, {
         httpOnly: true,
-        sameSite: "lax",
-        secure: false, 
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        sameSite: "none",
+        secure: true, 
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: "/"
       });
       return res.status(200).json({
         message : "Login successful"

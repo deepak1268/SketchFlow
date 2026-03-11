@@ -267,4 +267,6 @@ app.get("/check-auth",(req,res) => {
   }
 })
 
-app.listen(3001);
+app.listen(Number(process.env.PORT) || 3001, "0.0.0.0", () => {
+  console.log(`Server is running on port ${process.env.PORT || 3001}`);
+});

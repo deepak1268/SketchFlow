@@ -20,7 +20,7 @@ export default function AuthPage({signin} : {signin : boolean}) {
             const res = await Signup({username,email,password});
             router.push("/signin");
         } catch (err) {
-            alert("Some error occured");
+            alert("signup failed");
             console.error(err);
         } finally{
             setLoading(false);
@@ -33,7 +33,7 @@ export default function AuthPage({signin} : {signin : boolean}) {
             const res = await Signin({email, password});
             router.push("/dashboard")
         } catch (err) {
-            alert("some error occured")
+            alert("signin failed")
             console.error(err);
         }
         finally{

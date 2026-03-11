@@ -69,7 +69,7 @@ export function clearCanvas(
       ctx.font = "16px Arial";
       ctx.fillStyle = "white";
       ctx.textBaseline = "top";
-      const lines = shape.text.split("\n");
+      const lines = (shape.text ?? "").split("\n");
       lines.forEach((line, index) => {
         ctx.fillText(line, shape.x, shape.y + index * 20);
       });
@@ -205,7 +205,7 @@ function drawText(
   ctx.textBaseline = "top";
 
   const lineHeight = 20;
-  const lines = shape.text.split("\n");
+  const lines = (shape.text ?? "").split("\n");
 
   lines.forEach((line, index) => {
     ctx.fillText(line, shape.x, shape.y + index * lineHeight);
